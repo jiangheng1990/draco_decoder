@@ -1,6 +1,6 @@
 [package]
 name = "draco_decoder"
-version = "0.0.18"
+version = "0.0.19"
 authors = ["jiang heng <https://github.com/jiangheng90/"]
 description = "a draco decoder on rust (wip)"
 repository = "https://github.com/jiangheng1990/draco_decoder"
