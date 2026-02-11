@@ -56,14 +56,20 @@ fn main() {
         }
 
         // CXX bridge
-        cxx_build::bridge("src/ffi.rs")
+        let mut build = cxx_build::bridge("src/ffi.rs");
+        build
             .file("cpp/decoder_api.cc")
             .include("include")
             .include("third_party/draco/src")
             .include("third_party/draco/build")
             .include(format!("{draco_install}/include"))
-            .flag_if_supported("-std=c++17")
-            .compile("decoder_api");
+            .flag_if_supported("-std=c++17");
+
+        if target.contains("apple-darwin") {
+            build.flag("-mmacosx-version-min=15.5");
+        }
+
+        build.compile("decoder_api");
 
         // Link Draco
         println!("cargo:rustc-link-search=native={}", draco_install);
