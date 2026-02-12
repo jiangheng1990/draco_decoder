@@ -64,6 +64,7 @@ fn main() {
     build
         .file("cpp/decoder_api.cc")
         .include("include")
+        .include("target/cxxbridge/draco_decoder/src")
         .include("third_party/draco/src")
         .include("third_party/draco/build")
         .include(format!("{draco_install}/include"))
@@ -84,4 +85,5 @@ fn main() {
 
     println!("cargo:rerun-if-changed=cpp/decoder_api.cc");
     println!("cargo:rerun-if-changed=include/decoder_api.h");
+    println!("cargo:rerun-if-changed=src/ffi.rs");
 }

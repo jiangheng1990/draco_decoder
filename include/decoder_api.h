@@ -1,6 +1,5 @@
 #pragma once
-#include "draco_decoder/src/ffi.rs.h"
-#include "rust/cxx.h"
+#include "ffi.rs.h"
 #include <cstdint>
 #include <vector>
 
