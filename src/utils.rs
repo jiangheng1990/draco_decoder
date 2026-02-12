@@ -101,6 +101,14 @@ impl DracoDecodeConfig {
     pub fn attributes(&self) -> Vec<MeshAttribute> {
         self.attributes.clone()
     }
+
+    pub fn vertex_count(&self) -> u32 {
+        self.vertex_count
+    }
+
+    pub fn index_count(&self) -> u32 {
+        self.index_count
+    }
 }
 
 impl DracoDecodeConfig {
