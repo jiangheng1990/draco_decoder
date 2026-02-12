@@ -1,10 +1,10 @@
 [package]
 name = "draco_decoder"
-version = "0.0.19"
+version = "0.0.20"
 authors = ["jiang heng <https://github.com/jiangheng90/"]
 description = "a draco decoder on rust (wip)"
-repository = "https://github.com/jiangheng1990/draco_decoder"
-homepage = "https://github.com/jiangheng1990/draco_decoder"
+repository = "https://github.com/jiangheng90-opensource/draco_decoder"
+homepage = "https://github.com/jiangheng90-opensource/draco_decoder"
 keywords = ["draco", "decoder"]
 license = "MIT OR Apache-2.0"
 edition = "2024"

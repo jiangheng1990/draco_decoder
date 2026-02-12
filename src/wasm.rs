@@ -1,13 +1,10 @@
-use js_sys::{Promise, Uint8Array};
+use js_sys::{Array, Object, Promise, Uint8Array};
 use std::cell::RefCell;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
-use web_sys::window;
 
-use crate::{AttributeDataType, AttributeValues, DracoDecodeConfig};
-
-use web_sys::console;
+use crate::{AttributeDataType, DracoDecodeConfig};
 
 thread_local! {
     static DRACO_DECODE_FUNC_MODULE: RefCell<Option<JsValue>> = RefCell::new(None);
@@ -68,6 +65,83 @@ pub async fn decode_mesh_wasm_worker(data: &[u8], config: &DracoDecodeConfig) ->
 
     match decode_draco_mesh_from_embedded_js(&js_array, estimate_buffer_size).await {
         Ok(decoded) => Some(decoded.to_vec()),
+        Err(err) => {
+            web_sys::console::error_1(&err);
+            None
+        }
+    }
+}
+
+async fn decode_draco_mesh_from_embedded_js_with_config(
+    data: &js_sys::Uint8Array,
+) -> Result<(Vec<u8>, DracoDecodeConfig), JsValue> {
+    let module = get_js_module().await?;
+
+    // Call the decode function with config from the module
+    let decode_fn = js_sys::Reflect::get(
+        &module,
+        &JsValue::from_str("decodeDracoMeshInWorkerWithConfig"),
+    )?
+    .dyn_into::<js_sys::Function>()?;
+
+    let this = JsValue::NULL;
+    let result = decode_fn.call1(&this, data)?;
+    let decode_promise: Promise = result.dyn_into()?;
+    let out_obj = JsFuture::from(decode_promise).await?;
+
+    // Parse the result: { decoded: Uint8Array, config: Object }
+    let decoded_array =
+        js_sys::Reflect::get(&out_obj, &JsValue::from_str("decoded"))?.dyn_into::<Uint8Array>()?;
+    let config_obj = js_sys::Reflect::get(&out_obj, &JsValue::from_str("config"))?;
+
+    // Convert config from JS to Rust
+    let vertex_count = js_sys::Reflect::get(&config_obj, &JsValue::from_str("vertex_count"))?
+        .as_f64()
+        .unwrap_or(0.0) as u32;
+    let index_count = js_sys::Reflect::get(&config_obj, &JsValue::from_str("index_count"))?
+        .as_f64()
+        .unwrap_or(0.0) as u32;
+
+    let attributes_array =
+        js_sys::Reflect::get(&config_obj, &JsValue::from_str("attributes"))?.dyn_into::<Array>()?;
+
+    let mut config = DracoDecodeConfig::new(vertex_count, index_count);
+
+    for i in 0..attributes_array.length() {
+        let attr_obj = attributes_array.get(i).dyn_into::<Object>()?;
+
+        let dim = js_sys::Reflect::get(&attr_obj, &JsValue::from_str("dim"))?
+            .as_f64()
+            .unwrap_or(0.0) as u32;
+        let data_type = js_sys::Reflect::get(&attr_obj, &JsValue::from_str("data_type"))?
+            .as_f64()
+            .unwrap_or(0.0) as i32;
+
+        let attr_data_type = match data_type {
+            0 => AttributeDataType::Int8,
+            1 => AttributeDataType::UInt8,
+            2 => AttributeDataType::Int16,
+            3 => AttributeDataType::UInt16,
+            4 => AttributeDataType::Int32,
+            5 => AttributeDataType::UInt32,
+            6 => AttributeDataType::Float32,
+            _ => AttributeDataType::Float32,
+        };
+
+        config.add_attribute(dim, attr_data_type);
+    }
+
+    Ok((decoded_array.to_vec(), config))
+}
+
+pub async fn decode_mesh_wasm_worker_with_config(data: &[u8]) -> Option<crate::MeshDecodeResult> {
+    let js_array = Uint8Array::from(data);
+
+    match decode_draco_mesh_from_embedded_js_with_config(&js_array).await {
+        Ok((decoded, config)) => Some(crate::MeshDecodeResult {
+            data: decoded,
+            config,
+        }),
         Err(err) => {
             web_sys::console::error_1(&err);
             None

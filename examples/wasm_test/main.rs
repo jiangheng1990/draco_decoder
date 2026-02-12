@@ -43,19 +43,19 @@ fn main() {
 
         match fetch_binary("assets/20/20_data.bin").await {
             Ok(bin) => {
-                use draco_decoder::decode_mesh;
+                use draco_decoder::decode_mesh_with_config;
                 let perf = web_sys::window().unwrap().performance().unwrap();
 
                 let start = perf.now();
 
-                match decode_mesh(&bin, &config).await {
-                    Some(mesh) => {
+                match decode_mesh_with_config(&bin).await {
+                    Some(mesh_decode_result) => {
                         let end = perf.now();
                         console::log_1(&format!("Decode time: {:.2} ms", end - start).into());
                         use wasm_bindgen::JsCast;
                         use web_sys::{Blob, HtmlElement, Url};
 
-                        let array = js_sys::Uint8Array::from(&mesh[..]);
+                        let array = js_sys::Uint8Array::from(&mesh_decode_result.data[..]);
                         let parts = js_sys::Array::new();
                         parts.push(&array.buffer());
                         let blob = Blob::new_with_u8_array_sequence(&parts).unwrap();

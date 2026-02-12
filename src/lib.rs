@@ -5,8 +5,12 @@ pub mod utils;
 mod wasm;
 
 #[cfg(not(target_arch = "wasm32"))]
+pub use ffi::MeshCache;
+#[cfg(not(target_arch = "wasm32"))]
 use ffi::decode_mesh_native;
-pub use utils::{AttributeDataType, AttributeValues, DracoDecodeConfig, MeshAttribute};
+pub use utils::{
+    AttributeDataType, AttributeValues, DracoDecodeConfig, MeshAttribute, MeshDecodeResult,
+};
 #[cfg(target_arch = "wasm32")]
 use wasm::decode_mesh_wasm_worker;
 
@@ -23,6 +27,21 @@ pub fn decode_mesh_sync(data: &[u8], config: &DracoDecodeConfig) -> Option<Vec<u
 #[cfg(target_arch = "wasm32")]
 pub async fn decode_mesh(data: &[u8], config: &DracoDecodeConfig) -> Option<Vec<u8>> {
     decode_mesh_wasm_worker(data, config).await
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub async fn decode_mesh_with_config(data: &[u8]) -> Option<MeshDecodeResult> {
+    ffi::decode_mesh_with_config(data)
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn decode_mesh_with_config_sync(data: &[u8]) -> Option<MeshDecodeResult> {
+    ffi::decode_mesh_with_config(data)
+}
+
+#[cfg(target_arch = "wasm32")]
+pub async fn decode_mesh_with_config(data: &[u8]) -> Option<MeshDecodeResult> {
+    wasm::decode_mesh_wasm_worker_with_config(data).await
 }
 
 #[cfg(test)]
@@ -188,5 +207,29 @@ mod tests {
                 Err(e) => console::error_1(&format!("Fetch error: {:?}", e).into()),
             }
         });
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[tokio::test]
+    async fn test_decode_mesh_with_config() {
+        use crate::{MeshDecodeResult, decode_mesh_with_config};
+
+        let input = fs::read("assets/20/20_data.bin").expect("Failed to read model file");
+
+        let decode_result = decode_mesh_with_config(&input).await;
+
+        if let Some(MeshDecodeResult { data, config }) = decode_result {
+            let mut expext_config = DracoDecodeConfig::new(3254, 4368);
+            expext_config.add_attribute(3, AttributeDataType::Float32);
+            expext_config.add_attribute(3, AttributeDataType::Float32);
+            expext_config.add_attribute(1, AttributeDataType::Float32);
+
+            assert_eq!(config, expext_config);
+
+            fs::create_dir_all("assets/20_decode").ok();
+            let path = "assets/20_decode/20_data.bin";
+            fs::write(path, &data).expect("Failed to write decoded mesh binary");
+            println!("Wrote decoded mesh to {path}");
+        }
     }
 }

@@ -19,7 +19,7 @@ impl AttributeDataType {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct MeshAttribute {
     dim: u32,
     data_type: AttributeDataType,
@@ -28,6 +28,15 @@ pub struct MeshAttribute {
 }
 
 impl MeshAttribute {
+    pub fn new(dim: u32, data_type: AttributeDataType, offset: u32, lenght: u32) -> Self {
+        Self {
+            dim,
+            data_type,
+            offset,
+            lenght,
+        }
+    }
+
     pub fn offset(&self) -> u32 {
         self.offset
     }
@@ -45,7 +54,7 @@ impl MeshAttribute {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct DracoDecodeConfig {
     vertex_count: u32,
     index_count: u32,
@@ -124,4 +133,10 @@ pub enum AttributeValues {
     Int32(Vec<i32>),
     UInt32(Vec<u32>),
     Float32(Vec<f32>),
+}
+
+#[derive(Debug)]
+pub struct MeshDecodeResult {
+    pub data: Vec<u8>,
+    pub config: DracoDecodeConfig,
 }
