@@ -1,8 +1,11 @@
 #pragma once
-#include "draco_decoder/src/ffi.rs.h"
 #include "rust/cxx.h"
 #include <cstdint>
 #include <vector>
+
+// Forward declarations - defined in ffi.rs.h
+struct MeshAttribute;
+struct MeshConfig;
 
 rust::Vec<uint8_t> decode_point_cloud(rust::Slice<const uint8_t> data);
 
