@@ -50,7 +50,8 @@ let buf = decode_mesh(data, &config).await;
 // wrapper end
 ```
 
-sync api
+### sync api
+
 ```rust
 use draco_decoder::{DracoDecodeConfig, AttributeDataType, decode_mesh};
 
@@ -66,6 +67,35 @@ let data: &[u8] = /* your Draco encoded data here */;
 // decode the mesh data
 let buf = decode_mesh_sync(data, &config)
 ```
+In certain cases, undecoded glTF primitive parameters are unreliable for configuring Draco, which can cause significant issues. To achieve zero-copy data, Rust must first allocate memory, but the required memory length cannot be determined through configuration. However, in Draco, obtaining the length would require a full decoding pass—resulting in two separate decoding operations. To address this, I designed a caching mechanism within the FFI that splits the decoding process into: decoding → generating configuration → allocating memory and copying data. The current decoding wrapper may still have some issues that need testing.
+
+### async api
+
+```rust
+use draco_decoder::{DracoDecodeConfig, AttributeDataType, decode_mesh_with_config};
+
+// Your Draco-encoded binary mesh data
+let data: &[u8] = /* your Draco encoded data here */;
+
+// Asynchronously decode the mesh data
+let MeshDecodeResult{data, config} = decode_mesh_with_config(data).await;
+
+// config is origin decodeconfig
+
+// wrapper end
+```
+### sync api
+
+```rust
+use draco_decoder::{DracoDecodeConfig, AttributeDataType, decode_mesh_with_config_sync};
+
+// Your Draco-encoded binary mesh data
+let data: &[u8] = /* your Draco encoded data here */;
+
+// decode the mesh data
+let MeshDecodeResult{data, config} = decode_mesh_with_config_sync(data, &config)
+```
+
 
 ## Performance
 
