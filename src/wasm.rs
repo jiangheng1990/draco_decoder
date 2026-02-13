@@ -70,11 +70,14 @@ async fn decode_draco_mesh_from_embedded_js_with_config(
     let index_count = js_sys::Reflect::get(&config_obj, &JsValue::from_str("index_count"))?
         .as_f64()
         .unwrap_or(0.0) as u32;
+    let buffer_size = js_sys::Reflect::get(&config_obj, &JsValue::from_str("buffer_size"))?
+        .as_f64()
+        .unwrap_or(0.0) as usize;
 
     let attributes_array =
         js_sys::Reflect::get(&config_obj, &JsValue::from_str("attributes"))?.dyn_into::<Array>()?;
 
-    let mut config = DracoDecodeConfig::new(vertex_count, index_count);
+    let mut config = DracoDecodeConfig::new(vertex_count, index_count, buffer_size);
 
     for i in 0..attributes_array.length() {
         let attr_obj = attributes_array.get(i).dyn_into::<Object>()?;
@@ -85,6 +88,12 @@ async fn decode_draco_mesh_from_embedded_js_with_config(
         let data_type = js_sys::Reflect::get(&attr_obj, &JsValue::from_str("data_type"))?
             .as_f64()
             .unwrap_or(0.0) as i32;
+        let offset = js_sys::Reflect::get(&attr_obj, &JsValue::from_str("offset"))?
+            .as_f64()
+            .unwrap_or(0.0) as u32;
+        let length = js_sys::Reflect::get(&attr_obj, &JsValue::from_str("length"))?
+            .as_f64()
+            .unwrap_or(0.0) as u32;
 
         let attr_data_type = match data_type {
             0 => AttributeDataType::Int8,
@@ -97,7 +106,7 @@ async fn decode_draco_mesh_from_embedded_js_with_config(
             _ => AttributeDataType::Float32,
         };
 
-        config.add_attribute(dim, attr_data_type);
+        config.add_attribute(dim, attr_data_type, offset, length);
     }
 
     Ok((decoded_array.to_vec(), config))

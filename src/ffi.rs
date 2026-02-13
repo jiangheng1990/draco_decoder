@@ -41,7 +41,7 @@ pub fn decode_point_cloud_native(data: &[u8]) -> Vec<u8> {
 }
 
 fn convert_config(cpp_config: cpp::MeshConfig) -> crate::DracoDecodeConfig {
-    let mut config = crate::DracoDecodeConfig::with_buffer_size(
+    let mut config = crate::DracoDecodeConfig::new(
         cpp_config.vertex_count,
         cpp_config.index_count,
         cpp_config.buffer_size,
@@ -58,7 +58,7 @@ fn convert_config(cpp_config: cpp::MeshConfig) -> crate::DracoDecodeConfig {
             6 => crate::AttributeDataType::Float32,
             _ => crate::AttributeDataType::UInt8,
         };
-        config.add_attribute_with_offset(attr.dim, data_type, attr.offset, attr.length);
+        config.add_attribute(attr.dim, data_type, attr.offset, attr.length);
     }
 
     config

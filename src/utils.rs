@@ -92,37 +92,10 @@ pub struct DracoDecodeConfig {
 }
 
 impl DracoDecodeConfig {
-    /// Creates a new config with the given vertex and index counts.
-    ///
-    /// The `buffer_size` is automatically initialized to the size required
-    /// for indices based on whether 16-bit or 32-bit indices are needed.
-    ///
-    /// # Arguments
-    ///
-    /// * `vertex_count` - Number of vertices in the mesh
-    /// * `index_count` - Number of indices in the mesh
-    pub fn new(vertex_count: u32, index_count: u32) -> Self {
-        let index_length = if index_count <= u16::MAX as u32 {
-            index_count as usize * 2
-        } else {
-            index_count as usize * 4
-        } as u32;
-
-        let buffer_size = index_length as usize;
-
-        Self {
-            vertex_count,
-            index_count,
-            index_length,
-            buffer_size,
-            attributes: Vec::new(),
-        }
-    }
-
     /// Creates a new config with a pre-computed buffer size.
     ///
     /// Used internally when decoding from C++ FFI.
-    pub fn with_buffer_size(vertex_count: u32, index_count: u32, buffer_size: usize) -> Self {
+    pub(crate) fn new(vertex_count: u32, index_count: u32, buffer_size: usize) -> Self {
         let index_length = if index_count <= u16::MAX as u32 {
             index_count as usize * 2
         } else {
@@ -143,32 +116,10 @@ impl DracoDecodeConfig {
         self.index_length
     }
 
-    /// Adds an attribute with automatically calculated offset and length.
-    ///
-    /// The offset is calculated based on the current buffer size,
-    /// and the buffer size is updated to include this attribute.
-    ///
-    /// # Arguments
-    ///
-    /// * `dim` - Number of components per vertex
-    /// * `data_type` - The data type of each component
-    pub fn add_attribute(&mut self, dim: u32, data_type: AttributeDataType) {
-        let offset = self.buffer_size as u32;
-        let length = dim * self.vertex_count * data_type.size_in_bytes() as u32;
-        let attribute = MeshAttribute {
-            dim,
-            data_type,
-            offset,
-            lenght: length,
-        };
-        self.attributes.push(attribute);
-        self.buffer_size += length as usize;
-    }
-
-    /// Adds an attribute with explicitly specified offset and length.
+    /// Adds an attribute with specified offset and length.
     ///
     /// Used internally when receiving attribute data from C++ FFI.
-    pub fn add_attribute_with_offset(
+    pub(crate) fn add_attribute(
         &mut self,
         dim: u32,
         data_type: AttributeDataType,
@@ -182,11 +133,6 @@ impl DracoDecodeConfig {
             lenght: length,
         };
         self.attributes.push(attribute);
-    }
-
-    /// Sets the total buffer size.
-    pub fn set_buffer_size(&mut self, size: usize) {
-        self.buffer_size = size;
     }
 
     /// Returns the attribute at the given index, if it exists.

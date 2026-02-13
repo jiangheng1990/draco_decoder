@@ -102,7 +102,6 @@ mod tests {
 
     #[cfg(not(target_arch = "wasm32"))]
     use super::ffi::decode_point_cloud_native;
-    use super::utils::{AttributeDataType, DracoDecodeConfig};
     use std::collections::HashSet;
     use std::fs::{self};
 
@@ -148,30 +147,6 @@ mod tests {
 
     #[cfg(target_arch = "wasm32")]
     wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
-
-    #[cfg_attr(not(target_arch = "wasm32"), test)]
-    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_config() {
-        let mut config = DracoDecodeConfig::new(16744, 54663);
-        config.add_attribute(3, AttributeDataType::Float32);
-        config.add_attribute(2, AttributeDataType::Float32);
-
-        assert_eq!(config.index_length(), 109326);
-
-        let Some(attr_0) = config.get_attribute(0) else {
-            panic!("fail to get attribute 0")
-        };
-
-        assert_eq!(attr_0.offset(), 109326);
-        assert_eq!(attr_0.lenght(), 200928);
-
-        let Some(attr_1) = config.get_attribute(1) else {
-            panic!("fail to get attribute 0")
-        };
-
-        assert_eq!(attr_1.offset(), 310254);
-        assert_eq!(attr_1.lenght(), 133952);
-    }
 
     #[cfg(not(target_arch = "wasm32"))]
     #[tokio::test]
