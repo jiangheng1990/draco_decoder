@@ -168,7 +168,13 @@ impl DracoDecodeConfig {
     /// Adds an attribute with explicitly specified offset and length.
     ///
     /// Used internally when receiving attribute data from C++ FFI.
-    pub fn add_attribute_with_offset(&mut self, dim: u32, data_type: AttributeDataType, offset: u32, length: u32) {
+    pub fn add_attribute_with_offset(
+        &mut self,
+        dim: u32,
+        data_type: AttributeDataType,
+        offset: u32,
+        length: u32,
+    ) {
         let attribute = MeshAttribute {
             dim,
             data_type,

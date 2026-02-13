@@ -86,8 +86,7 @@ pub fn decode_mesh_with_config(data: &[u8]) -> Option<crate::MeshDecodeResult> {
     let config = convert_config(cpp_config);
     let mut buffer = vec![0u8; buffer_size];
 
-    let written =
-        unsafe { cpp::decode_mesh_to_buffer(&mesh, buffer.as_mut_ptr(), buffer.len()) };
+    let written = unsafe { cpp::decode_mesh_to_buffer(&mesh, buffer.as_mut_ptr(), buffer.len()) };
 
     if written == 0 {
         panic!("Failed to decode mesh to buffer");

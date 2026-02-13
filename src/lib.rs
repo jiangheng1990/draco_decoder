@@ -192,7 +192,11 @@ mod tests {
             assert_eq!(
                 config.buffer_size(),
                 config.index_length() as usize
-                    + config.attributes().iter().map(|a| a.lenght() as usize).sum::<usize>()
+                    + config
+                        .attributes()
+                        .iter()
+                        .map(|a| a.lenght() as usize)
+                        .sum::<usize>()
             );
 
             fs::create_dir_all("assets/20_decode").ok();
