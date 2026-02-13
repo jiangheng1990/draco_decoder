@@ -180,4 +180,44 @@ mod tests {
             println!("Wrote decoded mesh to {path}");
         }
     }
+
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen_test]
+    async fn test_decode_mesh_with_config_wasm() {
+        use crate::decode_mesh_with_config;
+        use wasm_bindgen::JsCast;
+        use wasm_bindgen_futures::JsFuture;
+        use web_sys::{Request, RequestInit, RequestMode, Response};
+
+        // Fetch test data
+        let mut opts = RequestInit::new();
+        opts.set_method("GET");
+        opts.set_mode(RequestMode::Cors);
+
+        let request = Request::new_with_str_and_init("assets/20/20_data.bin", &opts).unwrap();
+        let resp_value = JsFuture::from(web_sys::window().unwrap().fetch_with_request(&request))
+            .await
+            .unwrap();
+        let resp: Response = resp_value.dyn_into().unwrap();
+        let buf = JsFuture::from(resp.array_buffer().unwrap()).await.unwrap();
+        let u8_array = js_sys::Uint8Array::new(&buf);
+        let mut input = vec![0; u8_array.length() as usize];
+        u8_array.copy_to(&mut input[..]);
+
+        // Decode
+        let result = decode_mesh_with_config(&input).await;
+
+        assert!(result.is_some(), "Decoding should succeed");
+        let mesh = result.unwrap();
+
+        web_sys::console::log_1(&format!("vertex_count: {}", mesh.config.vertex_count()).into());
+        web_sys::console::log_1(&format!("index_count: {}", mesh.config.index_count()).into());
+        web_sys::console::log_1(&format!("buffer_size: {}", mesh.config.buffer_size()).into());
+        web_sys::console::log_1(&format!("attributes: {}", mesh.config.attributes().len()).into());
+
+        assert_eq!(mesh.config.vertex_count(), 3254);
+        assert_eq!(mesh.config.index_count(), 4368);
+        assert_eq!(mesh.config.attributes().len(), 3);
+        assert_eq!(mesh.data.len(), mesh.config.buffer_size());
+    }
 }

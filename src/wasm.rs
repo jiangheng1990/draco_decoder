@@ -106,8 +106,18 @@ async fn decode_draco_mesh_from_embedded_js_with_config(
             _ => AttributeDataType::Float32,
         };
 
+        web_sys::console::log_1(&format!(
+            "Attribute {}: dim={}, data_type={:?}, offset={}, length={}",
+            i, dim, attr_data_type, offset, length
+        ).into());
+
         config.add_attribute(dim, attr_data_type, offset, length);
     }
+
+    web_sys::console::log_1(&format!(
+        "Config: vertex_count={}, index_count={}, buffer_size={}, attributes={}",
+        vertex_count, index_count, buffer_size, config.attributes().len()
+    ).into());
 
     Ok((decoded_array.to_vec(), config))
 }
