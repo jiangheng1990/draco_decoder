@@ -26,6 +26,29 @@ impl AttributeDataType {
             AttributeDataType::Int32 | AttributeDataType::UInt32 | AttributeDataType::Float32 => 4,
         }
     }
+
+    /// Converts Draco native DataType enum value to AttributeDataType.
+    ///
+    /// Draco DataType enum values:
+    /// - 1: DT_INT8
+    /// - 2: DT_UINT8
+    /// - 3: DT_INT16
+    /// - 4: DT_UINT16
+    /// - 5: DT_INT32
+    /// - 6: DT_UINT32
+    /// - 9: DT_FLOAT32
+    pub fn from_draco_data_type(value: i32) -> Self {
+        match value {
+            1 => AttributeDataType::Int8,
+            2 => AttributeDataType::UInt8,
+            3 => AttributeDataType::Int16,
+            4 => AttributeDataType::UInt16,
+            5 => AttributeDataType::Int32,
+            6 => AttributeDataType::UInt32,
+            9 => AttributeDataType::Float32,
+            _ => AttributeDataType::Float32,
+        }
+    }
 }
 
 /// Describes a single attribute in a decoded mesh.

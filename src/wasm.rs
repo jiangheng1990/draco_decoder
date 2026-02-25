@@ -95,16 +95,7 @@ async fn decode_draco_mesh_from_embedded_js_with_config(
             .as_f64()
             .unwrap_or(0.0) as u32;
 
-        let attr_data_type = match data_type {
-            0 => AttributeDataType::Int8,
-            1 => AttributeDataType::UInt8,
-            2 => AttributeDataType::Int16,
-            3 => AttributeDataType::UInt16,
-            4 => AttributeDataType::Int32,
-            5 => AttributeDataType::UInt32,
-            6 => AttributeDataType::Float32,
-            _ => AttributeDataType::Float32,
-        };
+        let attr_data_type = AttributeDataType::from_draco_data_type(data_type);
 
         config.add_attribute(dim, attr_data_type, offset, length);
     }

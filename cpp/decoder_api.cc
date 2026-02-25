@@ -131,33 +131,8 @@ bool compute_mesh_config(const DracoMesh &draco_mesh, MeshConfig &config) {
     mesh_attr.dim = attr->num_components();
     mesh_attr.unique_id = attr->unique_id();
 
-    // Convert Draco DataType to enum
-    switch (attr->data_type()) {
-    case draco::DT_INT8:
-      mesh_attr.data_type = 0;
-      break;
-    case draco::DT_UINT8:
-      mesh_attr.data_type = 1;
-      break;
-    case draco::DT_INT16:
-      mesh_attr.data_type = 2;
-      break;
-    case draco::DT_UINT16:
-      mesh_attr.data_type = 3;
-      break;
-    case draco::DT_INT32:
-      mesh_attr.data_type = 4;
-      break;
-    case draco::DT_UINT32:
-      mesh_attr.data_type = 5;
-      break;
-    case draco::DT_FLOAT32:
-      mesh_attr.data_type = 6;
-      break;
-    default:
-      mesh_attr.data_type = 1; // Default to UInt8
-      break;
-    }
+    // Use Draco native DataType enum directly
+    mesh_attr.data_type = static_cast<int>(attr->data_type());
 
     mesh_attr.offset = current_offset;
     mesh_attr.length = mesh_attr.dim * config.vertex_count *

@@ -48,16 +48,7 @@ fn convert_config(cpp_config: cpp::MeshConfig) -> crate::DracoDecodeConfig {
     );
 
     for attr in cpp_config.attributes {
-        let data_type = match attr.data_type {
-            0 => crate::AttributeDataType::Int8,
-            1 => crate::AttributeDataType::UInt8,
-            2 => crate::AttributeDataType::Int16,
-            3 => crate::AttributeDataType::UInt16,
-            4 => crate::AttributeDataType::Int32,
-            5 => crate::AttributeDataType::UInt32,
-            6 => crate::AttributeDataType::Float32,
-            _ => crate::AttributeDataType::UInt8,
-        };
+        let data_type = crate::AttributeDataType::from_draco_data_type(attr.data_type as i32);
         config.add_attribute(attr.dim, data_type, attr.offset, attr.length);
     }
 
